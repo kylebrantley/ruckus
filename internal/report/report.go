@@ -1,7 +1,6 @@
 package report
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -15,33 +14,38 @@ type RequestResult struct {
 	ResponseCode       int
 }
 
-type Details struct{}
+type Details struct {
+	ExpectedNumberOfRequests int
+	ActualNumberOfRequests   int
+}
 
 type Report struct {
 	results  chan RequestResult
 	finished chan bool
 	details  Details
+	Test     int
 }
 
-func New(results chan RequestResult) Report {
-	return Report{
+func New(results chan RequestResult) *Report {
+	return &Report{
 		results:  results,
 		finished: make(chan bool, 1),
 	}
 }
 
-func (r Report) Run() {
-	for r := range r.results {
-		fmt.Printf("result received: %v\n", r)
+func (r *Report) Run() {
+	for res := range r.results {
+		_ = res
+		r.details.ActualNumberOfRequests++
 	}
 
 	r.finished <- true
 }
 
-func (r Report) Finished() <-chan bool {
+func (r *Report) Finished() <-chan bool {
 	return r.finished
 }
 
-func (r Report) Details() Details {
+func (r *Report) Details() Details {
 	return r.details
 }
