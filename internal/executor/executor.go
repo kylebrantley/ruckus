@@ -38,7 +38,7 @@ type Executor struct {
 
 func (e *Executor) Init() {
 	e.results = make(chan *result, e.NumberOfRequests)
-	e.stop = make(chan struct{}, min(e.NumberOfThreads, maxChannelSize))
+	e.stop = make(chan struct{}, min(e.NumberOfThreads, maxChannelSize)) // nolint:typecheck
 }
 
 func (e *Executor) Start() {
