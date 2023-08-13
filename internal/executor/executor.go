@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// Arbitrary max channel size to reduce how much memory will be allocated
-// TODO: Do some tests and find an optimal value
+// Arbitrary max channel size to reduce how much memory will be allocated.
+// TODO: Do some tests and find an optimal value.
 const maxChannelSize = 100
 
 type result struct {
@@ -38,16 +38,12 @@ type Executor struct {
 
 func (e *Executor) Init() {
 	e.results = make(chan *result, e.NumberOfRequests)
-	e.stop = make(chan struct{}, min(e.NumberOfThreads, maxChannelSize)) // nolint:typecheck
+	e.stop = make(chan struct{}, min(e.NumberOfThreads, maxChannelSize))
 }
 
 func (e *Executor) Start() {
 	e.Init()
-	go func() {
-		for r := range e.results {
-			fmt.Printf("\nresult: %v\n", r)
-		}
-	}()
+
 	e.runWorkers()
 }
 
@@ -55,13 +51,14 @@ func (e *Executor) Stop() {
 	for i := 0; i < e.NumberOfThreads; i++ {
 		e.stop <- struct{}{}
 	}
-	fmt.Printf("shutdown received")
+
 	close(e.results)
 	close(e.stop)
 }
 
 func (e *Executor) runWorkers() {
 	var wg sync.WaitGroup
+
 	wg.Add(e.NumberOfThreads)
 
 	client := &http.Client{
@@ -94,6 +91,7 @@ func (e *Executor) executeRequest(client *http.Client) error {
 	start := time.Now()
 
 	var dnsStart, connectionStart, responseStart, requestStart, delayStart time.Time
+
 	var dnsDuration, connectionDuration, responseDuration, requestDuration, delayDuration time.Duration
 
 	request, err := cloneRequest(e.Request)
@@ -128,10 +126,10 @@ func (e *Executor) executeRequest(client *http.Client) error {
 	}
 
 	request = request.WithContext(httptrace.WithClientTrace(request.Context(), trace))
+
 	response, err := client.Do(request)
 	if err != nil {
-		fmt.Printf("request failed: %v", err)
-		// TODO: something
+		return fmt.Errorf("request failed: %v", err)
 	}
 
 	responseDuration = time.Since(responseStart)
@@ -157,7 +155,7 @@ func cloneRequest(r *http.Request) (*http.Request, error) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read request body: %v", err)
 	}
 
 	r.Body = io.NopCloser(bytes.NewReader(body))

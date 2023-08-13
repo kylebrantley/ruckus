@@ -20,11 +20,11 @@ func main() {
 
 	logger.Info().Msg("bringing da ruckus")
 
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
 	// bodyReader := bytes.NewReader([]byte(`{"message":"hello"}`))
-	request, err := http.NewRequest("GET", "http://localhost:8080/hello", nil /* bodyReader */)
+	request, err := http.NewRequest(http.MethodGet, "http://localhost:8080/hello", nil /* bodyReader */)
 	if err != nil {
 		// TODO: should log a message about potential config values when that is implemented
 		logger.Fatal().Msg("failed to create request")
