@@ -7,8 +7,13 @@ import (
 	"time"
 
 	"github.com/kylebrantley/ruckus/internal/executor"
+	"github.com/kylebrantley/ruckus/internal/report"
 	"github.com/rs/zerolog"
 )
+
+// Arbitrary max channel size to reduce how much memory will be allocated.
+// TODO: Do some tests and find an optimal value.
+const maxChannelSize = 100
 
 func main() {
 	logger := zerolog.New(
@@ -30,7 +35,10 @@ func main() {
 		logger.Fatal().Msg("failed to create request")
 	}
 
-	e := executor.Executor{Request: request, NumberOfRequests: 2, NumberOfThreads: 1, RequestTimeout: 10}
+	results := make(chan report.RequestResult, min(maxChannelSize, 10))
+	p := report.New(results)
+
+	e := executor.New(request, 2, 1, 10, results, p)
 
 	go func() {
 		<-c
