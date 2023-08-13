@@ -1,7 +1,7 @@
 name: Some testing pipeline
 
 env:
-  GO_VERSION: '1.20.6'
+  GO_VERSION: '1.21.0'
 
 on:
   push:
