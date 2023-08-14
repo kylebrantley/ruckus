@@ -54,8 +54,8 @@ func New(
 }
 
 func (e *Executor) Start() {
-	e.runWorkers()
 	go e.parser.Run()
+	e.runWorkers()
 
 	close(e.results)
 	<-e.parser.Finished()

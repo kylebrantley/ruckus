@@ -47,5 +47,6 @@ func main() {
 	}()
 
 	e.Start()
-	logger.Info().Msg("the ruckus has been brought")
+
+	logger.Info().Interface("details", r.Details()).Msg("the ruckus has been brought")
 }
