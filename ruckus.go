@@ -36,7 +36,7 @@ func main() {
 	}
 
 	results := make(chan report.RequestResult, min(maxChannelSize, 10))
-	r := report.New(results)
+	r := report.New(10, results)
 	e := executor.New(request, 10, 2, 10, results, r)
 
 	go func() {

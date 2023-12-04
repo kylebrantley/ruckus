@@ -1,6 +1,6 @@
 module github.com/kylebrantley/ruckus
 
-go 1.21
+go 1.21.4
 
 require (
 	github.com/rs/zerolog v1.30.0
