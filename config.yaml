@@ -1,0 +1,9 @@
+request:
+  url: http://localhost:8080/hello
+  method: GET
+  body: '{"name": "world"}'
+  headers:
+      Content-Type: application/json
+  timeout: 1000
+numberOfRequests: 100
+maxConcurrentRequests: 10

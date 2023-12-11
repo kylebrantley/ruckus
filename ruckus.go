@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/kylebrantley/ruckus/internal/config"
 	"github.com/kylebrantley/ruckus/internal/executor"
 	"github.com/kylebrantley/ruckus/internal/report"
 	"github.com/rs/zerolog"
@@ -25,19 +26,24 @@ func main() {
 
 	logger.Info().Msg("bringing da ruckus")
 
+	cfg, err := config.New("config.yaml")
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to load config")
+	}
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
 	// bodyReader := bytes.NewReader([]byte(`{"message":"hello"}`))
-	request, err := http.NewRequest(http.MethodGet, "http://localhost:8080/hello", nil /* bodyReader */)
+	request, err := http.NewRequest(cfg.Request.Method, cfg.Request.URL, nil /* bodyReader */)
 	if err != nil {
 		// TODO: should log a message about potential config values when that is implemented
 		logger.Fatal().Msg("failed to create request")
 	}
 
-	results := make(chan report.RequestResult, min(maxChannelSize, 10))
-	r := report.New(10, results)
-	e := executor.New(request, 10, 2, 10, results, r)
+	results := make(chan report.RequestResult, min(maxChannelSize, cfg.NumberOfRequests))
+	r := report.New(cfg.NumberOfRequests, results)
+	e := executor.New(request, cfg.NumberOfRequests, cfg.MaxConcurrentRequests, cfg.Request.Timeout, results, r)
 
 	go func() {
 		<-c
