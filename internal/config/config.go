@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/spf13/viper"
 )
@@ -35,4 +36,49 @@ func New(filePath string) (Config, error) {
 	}
 
 	return config, nil
+}
+
+func (c Config) Validate() []error {
+	var errs []error
+
+	err := c.Request.validateMethod()
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	if c.Request.URL == "" {
+		errs = append(errs, fmt.Errorf("url is required"))
+	}
+
+	if c.Request.Method == "" {
+		errs = append(errs, fmt.Errorf("method is required"))
+	}
+
+	if c.NumberOfRequests < 1 {
+		errs = append(errs, fmt.Errorf("numberOfRequests must be greater than 0"))
+	}
+
+	if c.MaxConcurrentRequests < 1 {
+		errs = append(errs, fmt.Errorf("maxConcurrentRequests must be greater than 0"))
+	}
+
+	return errs
+}
+
+func (r Request) validateMethod() error {
+	allowedMethods := []string{
+		http.MethodGet,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodDelete,
+		http.MethodPatch,
+	}
+
+	for _, method := range allowedMethods {
+		if r.Method == method {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("invalid method: %s", r.Method)
 }

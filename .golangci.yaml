@@ -5,10 +5,6 @@ linters-settings:
   forbidigo:
     forbid:
       - 'log\.Print.*'
-      - 'fmt\.Print.*'
-
-  gofumpt:
-    extra-rules: true
 
   nolintlint:
     require-explanation: true
@@ -25,7 +21,6 @@ linters:
     - gocheckcompilerdirectives
     - goconst
     - gocritic
-    - godot
     - gofumpt
     - goimports
     - gosec

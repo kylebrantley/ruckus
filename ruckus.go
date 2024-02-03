@@ -1,13 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
+	"sync/atomic"
 	"time"
 
 	"github.com/kylebrantley/ruckus/internal/config"
 	"github.com/kylebrantley/ruckus/internal/executor"
+	"github.com/kylebrantley/ruckus/internal/progressbar"
 	"github.com/kylebrantley/ruckus/internal/report"
 	"github.com/rs/zerolog"
 )
@@ -51,6 +55,25 @@ func main() {
 		e.Stop()
 		os.Exit(0)
 	}()
+
+	requestCounter := int32(0)
+
+	content, _ := ioutil.ReadFile("ascii.txt")
+	fmt.Println(string(content))
+
+	progressBar := progressbar.New(cfg.NumberOfRequests)
+	go func() {
+		fmt.Println("")
+		fmt.Println("")
+		for range e.ProcessedChannel {
+			atomic.AddInt32(&requestCounter, 1)
+			progressBar.Print(int(atomic.LoadInt32(&requestCounter)))
+		}
+	}()
+
+	fmt.Printf("URL: %s\n", cfg.Request.URL)
+	fmt.Printf("method: %s\n", cfg.Request.Method)
+	fmt.Printf("total number requests: %d\n", cfg.NumberOfRequests)
 
 	e.Start()
 

@@ -5,5 +5,5 @@ request:
   headers:
       Content-Type: application/json
   timeout: 1000
-numberOfRequests: 100
+numberOfRequests: 50
 maxConcurrentRequests: 10
