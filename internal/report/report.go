@@ -51,23 +51,24 @@ type Report struct {
 	Test     int
 }
 
-func New(results chan RequestResult) *Report {
+func New(expectedRequests int, results chan RequestResult) *Report {
 	return &Report{
 		results:  results,
 		finished: make(chan bool, 1),
 		details: Details{
-			MinDNSLookup:    math.MaxFloat64,
-			MaxDNSLookup:    math.SmallestNonzeroFloat64,
-			MinConnection:   math.MaxFloat64,
-			MaxConnection:   math.SmallestNonzeroFloat64,
-			MinResponse:     math.MaxFloat64,
-			MaxResponse:     math.SmallestNonzeroFloat64,
-			MinRequest:      math.MaxFloat64,
-			MaxRequest:      math.SmallestNonzeroFloat64,
-			MinDelay:        math.MaxFloat64,
-			MaxDelay:        math.SmallestNonzeroFloat64,
-			MinTotalLatency: math.MaxFloat64,
-			MaxTotalLatency: math.SmallestNonzeroFloat64,
+			ExpectedNumberOfRequests: expectedRequests,
+			MinDNSLookup:             math.MaxFloat64,
+			MaxDNSLookup:             math.SmallestNonzeroFloat64,
+			MinConnection:            math.MaxFloat64,
+			MaxConnection:            math.SmallestNonzeroFloat64,
+			MinResponse:              math.MaxFloat64,
+			MaxResponse:              math.SmallestNonzeroFloat64,
+			MinRequest:               math.MaxFloat64,
+			MaxRequest:               math.SmallestNonzeroFloat64,
+			MinDelay:                 math.MaxFloat64,
+			MaxDelay:                 math.SmallestNonzeroFloat64,
+			MinTotalLatency:          math.MaxFloat64,
+			MaxTotalLatency:          math.SmallestNonzeroFloat64,
 		},
 	}
 }
@@ -75,7 +76,6 @@ func New(results chan RequestResult) *Report {
 // Run will block until the results channel is closed.
 func (r *Report) Run() {
 	for res := range r.results {
-		_ = res
 		r.details.ActualNumberOfRequests++
 
 		r.details.MinDNSLookup = min(r.details.MinDNSLookup, res.DNSDuration.Seconds())

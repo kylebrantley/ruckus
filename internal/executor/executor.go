@@ -31,6 +31,8 @@ type Executor struct {
 	NumberOfThreads  int // Maximum number concurrent workers
 	RequestTimeout   int
 
+	ProcessedChannel chan bool
+
 	results chan report.RequestResult
 	stop    chan struct{}
 	parser  parser
@@ -38,7 +40,9 @@ type Executor struct {
 
 func New(
 	request *http.Request,
-	numberOfRequests, numberOfThreads, requestTimeout int,
+	numberOfRequests int,
+	numberOfThreads int,
+	requestTimeout int,
 	results chan report.RequestResult,
 	parser parser,
 ) *Executor {
@@ -47,6 +51,7 @@ func New(
 		NumberOfRequests: numberOfRequests,
 		NumberOfThreads:  numberOfThreads,
 		RequestTimeout:   requestTimeout,
+		ProcessedChannel: make(chan bool, numberOfRequests),
 		results:          results,
 		stop:             make(chan struct{}, numberOfThreads),
 		parser:           parser,
@@ -145,6 +150,8 @@ func (e *Executor) executeRequest(client *http.Client) error {
 	if err != nil {
 		return fmt.Errorf("request failed: %v", err)
 	}
+
+	e.ProcessedChannel <- true
 
 	responseDuration = time.Since(responseStart)
 	totalDuration := time.Since(start)

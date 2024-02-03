@@ -34,7 +34,7 @@ func (m mockParser) Finished() <-chan bool {
 }
 
 func TestExecutor_Start(t *testing.T) {
-	tests := []struct {
+	scenarios := []struct {
 		name             string
 		numberOfRequests int
 		numberOfThreads  int
@@ -50,7 +50,7 @@ func TestExecutor_Start(t *testing.T) {
 			numberOfThreads:  2,
 		},
 	}
-	for _, scenario := range tests {
+	for _, scenario := range scenarios {
 		t.Run(
 			scenario.name, func(t *testing.T) {
 				requestCounter := int64(0)
@@ -77,6 +77,7 @@ func TestExecutor_Start(t *testing.T) {
 					make(chan report.RequestResult, 10),
 					parser,
 				)
+
 				e.Start()
 
 				assert.Equal(t, int64(scenario.numberOfRequests), requestCounter)
