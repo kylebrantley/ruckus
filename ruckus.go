@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -58,13 +57,15 @@ func main() {
 
 	requestCounter := int32(0)
 
-	content, _ := ioutil.ReadFile("ascii.txt")
+	content, _ := os.ReadFile("ascii.txt")
 	fmt.Println(string(content))
 
 	progressBar := progressbar.New(cfg.NumberOfRequests)
+
 	go func() {
 		fmt.Println("")
 		fmt.Println("")
+
 		for range e.ProcessedChannel {
 			atomic.AddInt32(&requestCounter, 1)
 			progressBar.Print(int(atomic.LoadInt32(&requestCounter)))
