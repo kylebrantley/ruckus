@@ -37,8 +37,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
-	// bodyReader := bytes.NewReader([]byte(`{"message":"hello"}`))
-	request, err := http.NewRequest(cfg.Request.Method, cfg.Request.URL, nil /* bodyReader */)
+	request, err := http.NewRequest(cfg.Request.Method, cfg.Request.URL, nil)
 	if err != nil {
 		// TODO: should log a message about potential config values when that is implemented
 		logger.Fatal().Msg("failed to create request")
@@ -46,7 +45,15 @@ func main() {
 
 	results := make(chan report.RequestResult, min(maxChannelSize, cfg.NumberOfRequests))
 	r := report.New(cfg.NumberOfRequests, results)
-	e := executor.New(request, cfg.NumberOfRequests, cfg.MaxConcurrentRequests, cfg.Request.Timeout, results, r)
+	e := executor.New(
+		request,
+		[]byte(cfg.Request.Body),
+		cfg.NumberOfRequests,
+		cfg.MaxConcurrentRequests,
+		cfg.Request.Timeout,
+		results,
+		r,
+	)
 
 	go func() {
 		<-c

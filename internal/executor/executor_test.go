@@ -71,6 +71,7 @@ func TestExecutor_Start(t *testing.T) {
 
 				e := executor.New(
 					request,
+					[]byte(""),
 					scenario.numberOfRequests,
 					scenario.numberOfThreads,
 					10,
