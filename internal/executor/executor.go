@@ -40,6 +40,7 @@ type Executor struct {
 
 func New(
 	request *http.Request,
+	requestBody []byte,
 	numberOfRequests int,
 	numberOfThreads int,
 	requestTimeout int,
@@ -48,6 +49,7 @@ func New(
 ) *Executor {
 	return &Executor{
 		Request:          request,
+		RequestBody:      requestBody,
 		NumberOfRequests: numberOfRequests,
 		NumberOfThreads:  numberOfThreads,
 		RequestTimeout:   requestTimeout,
@@ -113,10 +115,7 @@ func (e *Executor) executeRequest(client *http.Client) error {
 
 	var dnsDuration, connectionDuration, responseDuration, requestDuration, delayDuration time.Duration
 
-	request, err := cloneRequest(e.Request)
-	if err != nil {
-		return err
-	}
+	request := e.cloneRequest()
 
 	trace := &httptrace.ClientTrace{
 		DNSStart: func(i httptrace.DNSStartInfo) {
@@ -168,22 +167,12 @@ func (e *Executor) executeRequest(client *http.Client) error {
 	return nil
 }
 
-func cloneRequest(r *http.Request) (*http.Request, error) {
-	r2 := r.Clone(context.TODO())
-	if r.Body == nil {
-		return r2, nil
+func (e *Executor) cloneRequest() *http.Request {
+	r2 := e.Request.Clone(context.TODO())
+
+	if len(e.RequestBody) > 0 {
+		r2.Body = io.NopCloser(bytes.NewReader(e.RequestBody))
 	}
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read request body: %v", err)
-	}
-
-	r.Body = io.NopCloser(bytes.NewReader(body))
-
-	if len(body) > 0 {
-		r2.Body = io.NopCloser(bytes.NewReader(body))
-	}
-
-	return r2, nil
+	return r2
 }
